@@ -1,11 +1,7 @@
 import React, { createContext, useState } from "react";
 import GameController from "../classes/GameController";
 import { createGame } from "../classes/Simulation";
-
-interface GameContextInterface {
-    game: GameController;
-    restartGame: () => void;
-}
+import { GameContextInterface } from "../interfaces/interfaces";
 
 const GameContext = createContext<GameContextInterface>({
     game: createGame(),

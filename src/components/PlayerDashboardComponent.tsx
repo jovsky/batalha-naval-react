@@ -1,51 +1,45 @@
-import React, { useContext, useState, useRef, useEffect } from "react";
+import { useContext, useState } from "react";
 import { GameContext } from "../context/GameContext";
 import BoardComponent from "./BoardComponent";
 import ShipPicker from "./ShipPicker";
 import { GameStatus } from "../interfaces/interfaces";
+import { generateShipSet } from "../utils/Utils";
+import PickerController from "../classes/PickerController";
 
 interface BoardProps {
     player: 1 | 2;
 }
 
 function PlayerDashboardComponent({ player }: BoardProps) {
-    const [rend, setRend] = useState(false);
-    const [showPicker, setShowPicker] = useState(false);
-    const picker = useRef<ShipPicker>(null);
-
     const { game } = useContext(GameContext);
-
     const board = player === 1 ? game.player1Board : game.player2Board;
 
+    const [rend, setRend] = useState(false);
+    const [pickerVisible, setPickerVisible] = useState(false);
+    const [pickerController, setPickerController] =
+        useState<PickerController | null>(null);
+
     function placeShipsRandomly() {
-        picker.current?.setShips([]);
-        setShowPicker(false);
-        const ships = game.generateShipSet(board.player);
+        const ships = generateShipSet(board.player);
         game.placeShipsRandomly(board, ships);
+        setPickerVisible(false);
+        setPickerController(null);
         setRend(!rend);
     }
 
-    function enablePlayerToPlace() {
-        const newValue = !showPicker;
-        if (game.status !== GameStatus.Starting || !newValue) {
-            setShowPicker(false);
+    function toggleManualPlace() {
+        if (game.status !== GameStatus.Starting) {
+            setPickerVisible(false);
+            setPickerController(null);
             setRend(!rend);
             return;
         }
-        setShowPicker(true);
-    }
+        const newVisibility = !pickerVisible;
 
-    useEffect(() => {
-        if (!showPicker) {
-            return;
-        }
-        let ships = board.clearShips();
-        if (!ships) {
-            ships = game.generateShipSet(board.player);
-        }
-        picker.current?.setShips(ships);
+        setPickerController(newVisibility ? new PickerController(board) : null);
+        setPickerVisible(newVisibility);
         setRend(!rend);
-    }, [showPicker]);
+    }
 
     return (
         <>
@@ -55,18 +49,18 @@ function PlayerDashboardComponent({ player }: BoardProps) {
                     <button className="custom-btn" onClick={placeShipsRandomly}>
                         POSICIONAR ALEATORIAMENTE
                     </button>
-                    <button
-                        className="custom-btn"
-                        onClick={enablePlayerToPlace}
-                    >
+                    <button className="custom-btn" onClick={toggleManualPlace}>
                         POSICIONAR MANUALMENTE
                     </button>
                 </div>
                 <div className="flex gap-2">
-                    {showPicker ? (
-                        <ShipPicker player={board.player} ref={picker} />
+                    {pickerVisible && pickerController ? (
+                        <ShipPicker controller={pickerController} />
                     ) : null}
-                    <BoardComponent board={board} />
+                    <BoardComponent
+                        board={board}
+                        controller={pickerController}
+                    />
                 </div>
             </div>
         </>

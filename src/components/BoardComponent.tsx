@@ -1,9 +1,11 @@
 import React from "react";
 import Board from "../classes/Board";
 import CellComponent from "./CellComponent";
+import PickerController from "../classes/PickerController";
 
 interface BoardProps {
     board: Board;
+    controller: PickerController | null;
 }
 
 class BoardComponent extends React.Component<BoardProps> {
@@ -14,7 +16,12 @@ class BoardComponent extends React.Component<BoardProps> {
                 {board.cellsMap.map((row, rowIndex) => (
                     <div key={rowIndex} className="flex flex-row gap-[1px]">
                         {row.map((cell, colIndex) => (
-                            <CellComponent cell={cell} key={colIndex} />
+                            <CellComponent
+                                cell={cell}
+                                board={board}
+                                controller={this.props.controller}
+                                key={colIndex}
+                            />
                         ))}
                     </div>
                 ))}

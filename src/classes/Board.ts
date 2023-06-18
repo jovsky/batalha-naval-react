@@ -1,5 +1,6 @@
 import { BoardCell, CellState, Direction } from "../interfaces/interfaces";
 import BattleShip from "./BattleShip";
+import GameController from "./GameController";
 
 export default class Board {
     public cellsMap: BoardCell[][];
@@ -7,7 +8,8 @@ export default class Board {
     constructor(
         public boardSize: number,
         private ships: BattleShip[] | null,
-        public player: 1 | 2
+        public player: 1 | 2,
+        public game: GameController
     ) {
         this.cellsMap = Array.from({ length: boardSize }, (_, row) =>
             Array.from({ length: boardSize }, (_, col) => ({
@@ -26,6 +28,7 @@ export default class Board {
         ship: BattleShip
     ): void {
         if (direction === "vertical") {
+            ship.cells = [];
             for (let r = row; r < row + ship.size; r++) {
                 const cell = this.cellsMap[r][col];
                 if (cell.state !== CellState.Empty) {
@@ -33,6 +36,7 @@ export default class Board {
                 }
                 cell.state = CellState.Ship;
                 cell.ship = ship;
+                ship.cells.push({ r, c: col });
             }
         } else {
             for (let c = col; c < col + ship.size; c++) {
@@ -42,6 +46,7 @@ export default class Board {
                 }
                 cell.state = CellState.Ship;
                 cell.ship = ship;
+                ship.cells.push({ r: row, c });
             }
         }
         if (!this.ships) {
@@ -95,17 +100,17 @@ export default class Board {
     }
 
     clearShips() {
-        if (this.ships) {
-            const ships = this.ships;
-            this.ships = null;
-
-            this.getAllCells().forEach((cell) => {
-                cell.ship = null;
-                cell.state = CellState.Empty;
-            });
-
-            return ships;
+        if (!this.ships) {
+            return;
         }
+        this.ships = null;
+
+        this.getAllCells().forEach((cell) => {
+            const ship = cell.ship;
+            cell.ship = null;
+            cell.state = CellState.Empty;
+            if (ship) ship.cells = [];
+        });
     }
 
     getAllCells() {
@@ -115,4 +120,28 @@ export default class Board {
     getShips() {
         return this.ships;
     }
+
+    handleDrop(rowIndex: number, colIndex: number) {
+        console.log(rowIndex, colIndex);
+        // event.preventDefault();
+        // const shipId = event.dataTransfer.getData('text/plain');
+        // const ship = ships.find((ship) => ship.id === shipId);
+        // if (ship) {
+        //   const canPlace = canPlaceShip(ship, rowIndex, colIndex);
+        //   if (canPlace) {
+        //     const newBoard = [...board];
+        //     for (let i = 0; i < ship.length; i++) {
+        //       if (ship.isHorizontal) {
+        //         newBoard[rowIndex][colIndex + i] = ship;
+        //       } else {
+        //         newBoard[rowIndex + i][colIndex] = ship;
+        //       }
+        //     }
+        //     setBoard(newBoard);
+        //     // onBoardDrop(ship.id, rowIndex, colIndex);
+        //   }
+        // }
+    }
+
+    onBoardDragOver() {}
 }

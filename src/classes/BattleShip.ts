@@ -4,6 +4,7 @@ export default class BattleShip {
     hits: number;
     color: string;
     id: string;
+    cells: { r: number; c: number }[] = [];
 
     constructor(name: string, length: number, color: string, id: string) {
         this.name = name;
