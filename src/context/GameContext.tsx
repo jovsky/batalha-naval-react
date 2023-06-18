@@ -19,7 +19,6 @@ function GameProvider({ children }: { children: React.ReactNode }) {
         setGame(createGame());
     }
 
-    console.log("update game");
     return (
         <GameContext.Provider
             value={{

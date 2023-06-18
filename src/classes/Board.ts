@@ -6,7 +6,7 @@ export default class Board {
 
     constructor(
         public boardSize: number,
-        public ships: BattleShip[] | null,
+        private ships: BattleShip[] | null,
         public player: 1 | 2
     ) {
         this.cellsMap = Array.from({ length: boardSize }, (_, row) =>
@@ -92,5 +92,27 @@ export default class Board {
             }
         }
         return true;
+    }
+
+    clearShips() {
+        if (this.ships) {
+            const ships = this.ships;
+            this.ships = null;
+
+            this.getAllCells().forEach((cell) => {
+                cell.ship = null;
+                cell.state = CellState.Empty;
+            });
+
+            return ships;
+        }
+    }
+
+    getAllCells() {
+        return this.cellsMap.flat();
+    }
+
+    getShips() {
+        return this.ships;
     }
 }

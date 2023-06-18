@@ -4,7 +4,6 @@ import Draggable from "react-draggable";
 import { getCellShipClass } from "../utils/Utils";
 
 interface ShipPickerProps {
-    ships: BattleShip[];
     player: 1 | 2;
 }
 
@@ -15,9 +14,7 @@ type ShipSlot = {
 export default class ShipPicker extends React.Component<ShipPickerProps> {
     pickerArea: ShipSlot[] = [];
 
-    componentDidMount(): void {
-        const { ships } = this.props;
-
+    setShips(ships: BattleShip[]) {
         this.pickerArea = ships.map((ship) => ({
             ship,
             direction: "horizontal",
@@ -28,10 +25,10 @@ export default class ShipPicker extends React.Component<ShipPickerProps> {
         return (
             <div className="flex flex-col">
                 {this.pickerArea.map((shipSlot, index) => (
-                    <div className="w-40 border-b border-black p-4">
+                    <div className="w-60 p-2 border-r border-gray-600 mr-6">
                         {shipSlot.ship ? (
                             <Draggable key={index}>
-                                <div className="flex bg-black p-[1px] gap-[1px]">
+                                <div className="flex bg-black p-[1px] gap-[1px] w-fit">
                                     {Array.from({
                                         length: shipSlot.ship.size,
                                     }).map((_, index) => (
@@ -44,8 +41,7 @@ export default class ShipPicker extends React.Component<ShipPickerProps> {
                                     ))}
                                 </div>
                             </Draggable>
-                        ) : null}{" "}
-                        ?
+                        ) : null}
                     </div>
                 ))}
             </div>

@@ -20,7 +20,7 @@ export default class GameController {
         this.status = GameStatus.Starting;
     }
 
-    placeShipsRandomly(board: Board) {
+    generateShipSet(player: 1 | 2) {
         const ships: BattleShip[] = [];
         gameSettings.ships.forEach((shipInfo) => {
             for (let index = 0; index < shipInfo.count; index++) {
@@ -28,16 +28,17 @@ export default class GameController {
                     shipInfo.name,
                     shipInfo.length,
                     shipInfo.color,
-                    `${shipInfo.name}_${index}_P${board.player}`
+                    `${shipInfo.name}_${index}_P${player}`
                 );
 
                 ships.push(newShip);
             }
         });
+        return ships;
+    }
 
-        if (!board.ships) {
-            board.ships = [];
-        }
+    placeShipsRandomly(board: Board, ships: BattleShip[]) {
+        board.clearShips();
 
         ships.forEach((ship) => {
             let placed = false;

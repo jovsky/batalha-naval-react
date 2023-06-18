@@ -5,11 +5,11 @@ import TopPanelComponent from "./components/TopPanelComponent";
 function App() {
     return (
         <GameProvider>
-            <div className="flex flex-col w-full h-full items-center justify-center gap-10">
+            <div className="flex flex-col w-full h-full items-center mt-40 gap-10">
                 <TopPanelComponent />
                 <div className="flex w-full  items-center">
                     <PlayerDashboardComponent player={1} />
-                    <PlayerDashboardComponent player={2} />
+                    {/* <PlayerDashboardComponent player={2} /> */}
                 </div>
             </div>
         </GameProvider>
