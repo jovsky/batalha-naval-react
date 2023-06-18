@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+#root {
+    height: 100vh;
+}
+
+.custom-btn {
+    @apply text-lg border-2 rounded-md border-red-500 px-4 py-1;
+}
+.cell-paint {
+    @apply w-8 h-8;
+    &.ship-cell {
+        box-shadow: inset 0px 0px 3px 0px black;
+        background-image: linear-gradient(45deg, #ffffff60, transparent);
+    }
+    &.purple-ship {
+        @apply bg-purple-500;
+    }
+    &.green-ship {
+        @apply bg-green-500;
+    }
+    &.blue-ship {
+        @apply bg-blue-500;
+    }
+    &.yellow-ship {
+        @apply bg-yellow-500;
+    }
+    &.red-ship {
+        @apply bg-red-500;
+    }
+    &.orange-ship {
+        @apply bg-orange-500;
+    }
+}
