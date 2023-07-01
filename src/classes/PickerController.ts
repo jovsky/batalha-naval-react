@@ -1,77 +1,86 @@
 import ShipPicker from "../components/ShipPicker";
-import { Direction, ShipMap } from "../interfaces/interfaces";
 import { generateShipSet } from "../utils/Utils";
 import BattleShip from "./BattleShip";
 import Board from "./Board";
+import GameController from "./GameController";
 
 export default class PickerController {
-    draggedShip: BattleShip | null = null;
-    shipMap = new Map<string, "picker" | "board">();
-    picker: ShipPicker | null = null;
+    private dragging: { ship: BattleShip; cellIndex: number } | null = null;
+    private picker: ShipPicker | null = null;
     private ships: BattleShip[] = [];
 
-    constructor(public board: Board) {
+    constructor(public game: GameController, public board: Board) {}
+
+    get isPlacing() {
+        return !!this.picker;
+    }
+
+    startPicker(picker: ShipPicker) {
+        if (this.picker || !this.game.isStarting) {
+            return [];
+        }
+        this.picker = picker;
         this.board.clearShips();
         this.ships = generateShipSet(this.board.player);
-        this.ships.forEach((ship) => this.shipMap.set(ship.id, "picker"));
+        this.ships.forEach((ship) => ship.setPlacePicker());
+        return [...this.ships];
     }
 
-    setPicker(picker: ShipPicker) {
-        if (!this.picker) {
-            this.picker = picker;
+    finishPicker() {
+        if (!this.game.isStarting) {
+            return;
         }
-    }
-
-    getShips() {
-        const ships = [...this.ships];
+        this.picker = null;
         this.ships = [];
-        return ships;
     }
 
-    getShipPlace(ship: BattleShip) {
-        return this.shipMap.get(ship.id)!;
-    }
-
-    draggedToBoard(row: number, col: number, direction: Direction) {
-        if (!this.draggedShip || !this.picker) {
+    draggedToBoard(row: number, col: number) {
+        if (!this.dragging || !this.picker) {
             return;
         }
 
-        const ship = this.draggedShip;
+        const ship = this.dragging.ship;
 
-        if (!this.board.canPlaceShip(row, col, direction, ship.size)) {
+        if (!this.board.canPlaceShip(row, col, ship)) {
             return;
         }
 
-        if (this.getShipPlace(ship) === "board") {
+        if (ship.getPlace() === "board") {
             this.board.removeShip(ship);
-            this.board.placeShip(row, col, direction, ship);
+            this.board.placeShip(row, col, ship);
         } else {
             this.picker.removeShipFromSlot(ship);
-            this.board.placeShip(row, col, direction, ship);
-            this.shipMap.set(ship.id, "board");
+            this.board.placeShip(row, col, ship);
+            ship.setPlaceBoard();
         }
     }
 
     draggedToPicker() {
-        if (!this.draggedShip || !this.picker) {
+        if (!this.dragging || !this.picker) {
             return;
         }
 
-        const ship = this.draggedShip;
+        const ship = this.dragging.ship;
 
-        if (this.getShipPlace(ship) === "board") {
+        if (ship.getPlace() === "board") {
             this.picker.addShipToSlot(ship);
             this.board.removeShip(ship);
-            this.shipMap.set(ship.id, "picker");
+            ship.setPlacePicker();
         }
     }
 
-    setDraggedShip(ship: BattleShip) {
-        this.draggedShip = ship;
+    getShipHeadPosition(
+        row: number,
+        col: number,
+        ship: BattleShip,
+        cellIndex: number
+    ) {}
+
+    setDraggedShip(ship: BattleShip, cellIndex: number) {
+        this.dragging = { ship, cellIndex };
     }
 
     unsetDraggedShip() {
-        this.draggedShip = null;
+        this.dragging = null;
     }
 }

@@ -19,8 +19,7 @@ class BoardComponent extends React.Component<BoardProps> {
                         {row.map((cell, colIndex) => (
                             <CellComponent
                                 cell={cell}
-                                board={board}
-                                controller={this.props.controller}
+                                player={board.player}
                                 key={colIndex}
                                 redraw={this.props.redraw}
                             />

@@ -1,4 +1,4 @@
-import { BoardCell, CellState, Direction } from "../interfaces/interfaces";
+import { BoardCell, CellState } from "../interfaces/interfaces";
 import BattleShip from "./BattleShip";
 import GameController from "./GameController";
 
@@ -21,14 +21,9 @@ export default class Board {
         );
     }
 
-    placeShip(
-        row: number,
-        col: number,
-        direction: Direction,
-        ship: BattleShip
-    ): void {
-        ship.cells = [];
-        if (direction === "vertical") {
+    placeShip(row: number, col: number, ship: BattleShip): void {
+        const cells = [];
+        if (ship.getDirection() === "vertical") {
             for (let r = row; r < row + ship.size; r++) {
                 const cell = this.cellsMap[r][col];
                 if (cell.state !== CellState.Empty) {
@@ -36,7 +31,7 @@ export default class Board {
                 }
                 cell.state = CellState.Ship;
                 cell.ship = ship;
-                ship.cells.push({ r, c: col });
+                cells.push({ r, c: col });
             }
         } else {
             for (let c = col; c < col + ship.size; c++) {
@@ -46,9 +41,10 @@ export default class Board {
                 }
                 cell.state = CellState.Ship;
                 cell.ship = ship;
-                ship.cells.push({ r: row, c });
+                cells.push({ r: row, c });
             }
         }
+        ship.setCells(cells);
         if (!this.ships) {
             this.ships = [];
         }
@@ -58,30 +54,30 @@ export default class Board {
     canPlaceShip(
         row: number,
         col: number,
-        direction: string,
-        shipLength: number,
-        blockAdjascent = false
+        ship: BattleShip,
+        blockAdjacent = false
     ): boolean {
-        if (direction === "horizontal") {
-            if (col + shipLength > this.boardSize) {
+        const shipSize = ship.size;
+        if (ship.getDirection() === "horizontal") {
+            if (col + shipSize > this.boardSize) {
                 return false;
             }
-            for (let c = col; c < col + shipLength; c++) {
+            for (let c = col; c < col + shipSize; c++) {
                 if (
                     this.cellHasShip(row, c) ||
-                    (blockAdjascent && this.hasAdjascentShip(row, c))
+                    (blockAdjacent && this.hasAdjacentShip(row, c))
                 ) {
                     return false;
                 }
             }
         } else {
-            if (row + shipLength > this.boardSize) {
+            if (row + shipSize > this.boardSize) {
                 return false;
             }
-            for (let r = row; r < row + shipLength; r++) {
+            for (let r = row; r < row + shipSize; r++) {
                 if (
                     this.cellHasShip(r, col) ||
-                    (blockAdjascent && this.hasAdjascentShip(r, col))
+                    (blockAdjacent && this.hasAdjacentShip(r, col))
                 ) {
                     return false;
                 }
@@ -103,7 +99,7 @@ export default class Board {
                 );
             }
 
-            cell.ship.hits++;
+            cell.ship.attacked();
             return true;
         }
         cell.state = CellState.Miss;
@@ -122,15 +118,15 @@ export default class Board {
         return !!this.cellsMap[row][col].ship;
     }
 
-    hasAdjascentShip(row: number, col: number) {
-        const neighbours = [
+    hasAdjacentShip(row: number, col: number) {
+        const neighbors = [
             [row - 1, col - 1],
             [row - 1, col + 1],
             [row + 1, col - 1],
             [row + 1, col + 1],
         ];
-        for (let i = 0; i < neighbours.length; i++) {
-            const [r, c] = neighbours[i];
+        for (let i = 0; i < neighbors.length; i++) {
+            const [r, c] = neighbors[i];
             if (r >= 0 && r < this.boardSize && c >= 0 && c < this.boardSize) {
                 if (this.cellHasShip(r, c)) {
                     return true;
@@ -162,16 +158,12 @@ export default class Board {
             const ship = cell.ship;
             cell.ship = null;
             cell.state = CellState.Empty;
-            if (ship) ship.cells = [];
+            if (ship) ship.clearCells();
         });
     }
 
     getAllCells() {
         return this.cellsMap.flat();
-    }
-
-    getShips() {
-        return this.ships;
     }
 
     removeShip(ship: BattleShip) {
@@ -183,7 +175,7 @@ export default class Board {
             return;
         }
         this.ships.splice(index, 1);
-        ship.cells.forEach(({ r, c }) => {
+        ship.getCells().forEach(({ r, c }) => {
             const cell = this.cellsMap[r][c];
             if (cell.ship && cell.ship.id === ship.id) {
                 cell.ship = null;

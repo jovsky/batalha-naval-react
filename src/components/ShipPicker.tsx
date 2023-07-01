@@ -1,10 +1,12 @@
 import React from "react";
 import BattleShip from "../classes/BattleShip";
-import { getCellShipClass } from "../utils/Utils";
-import PickerController from "../classes/PickerController";
+import { GameContext } from "../context/GameContext";
+import { GameContextInterface } from "../interfaces/interfaces";
+import DraggableShip from "./DraggableShip";
 
 interface ShipPickerProps {
-    controller: PickerController;
+    player: 1 | 2;
+    redraw: () => void;
 }
 
 interface ShipPickerState {
@@ -15,6 +17,8 @@ export default class ShipPicker extends React.Component<
     ShipPickerProps,
     ShipPickerState
 > {
+    static contextType = GameContext;
+
     constructor(props: ShipPickerProps) {
         super(props);
         this.state = {
@@ -22,21 +26,29 @@ export default class ShipPicker extends React.Component<
         };
     }
 
+    get game() {
+        return (this.context as GameContextInterface).game;
+    }
+
+    get pickerController() {
+        return this.game.getPickerController(this.props.player);
+    }
+
     componentDidMount(): void {
-        this.setState({ shipsAvailable: this.props.controller.getShips() });
-        this.props.controller.setPicker(this);
+        if (!this.game.isStarting) {
+            return;
+        }
+        const shipsAvailable = this.pickerController.startPicker(this);
+        this.setState({ shipsAvailable });
     }
 
-    handleDragStart(ship: BattleShip) {
-        this.props.controller.setDraggedShip(ship);
-    }
-
-    handleDragEnd() {
-        this.props.controller.unsetDraggedShip();
+    componentWillUnmount(): void {
+        this.pickerController.finishPicker();
     }
 
     handleDragDrop() {
-        this.props.controller?.draggedToPicker();
+        this.pickerController?.draggedToPicker();
+        this.props.redraw();
     }
 
     addShipToSlot(newShip: BattleShip) {
@@ -62,31 +74,16 @@ export default class ShipPicker extends React.Component<
     render() {
         return (
             <div
-                className="flex flex-col border-r border-gray-600 mr-6"
+                className="flex flex-col mr-6 rounded-xl bg-slate-700 px-10 pt-5 gap-2 h-[450px] w-[250px]"
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={() => this.handleDragDrop()}
             >
-                {this.state.shipsAvailable.map((ship, index) => (
-                    <div className="w-60 p-2" key={index}>
-                        <div
-                            className="flex bg-black p-[1px] gap-[1px] w-fit"
-                            key={ship.id}
-                            draggable
-                            onDragStart={() => this.handleDragStart(ship)}
-                            onDragEnd={() => this.handleDragEnd()}
-                        >
-                            {Array.from({
-                                length: ship.size,
-                            }).map((_, index) => (
-                                <div
-                                    key={index}
-                                    className={`cell-paint ${getCellShipClass(
-                                        ship
-                                    )}`}
-                                />
-                            ))}
-                        </div>
-                    </div>
+                {this.state.shipsAvailable.map((ship) => (
+                    <DraggableShip
+                        ship={ship}
+                        player={this.props.player}
+                        key={ship.id}
+                    />
                 ))}
             </div>
         );

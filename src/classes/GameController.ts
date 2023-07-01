@@ -1,10 +1,13 @@
 import { Direction, GameStatus } from "../interfaces/interfaces";
 import Board from "./Board";
 import BattleShip from "./BattleShip";
+import PickerController from "./PickerController";
 
 export default class GameController {
     public player1Board: Board;
     public player2Board: Board;
+    public player1Picker: PickerController;
+    public player2Picker: PickerController;
     public currentPlayer: number;
     public status: GameStatus;
     private dragPromiseResolve:
@@ -18,8 +21,23 @@ export default class GameController {
     ) {
         this.player1Board = new Board(boardSize, player1Ships, 1, this);
         this.player2Board = new Board(boardSize, player2Ships, 2, this);
+        this.player1Picker = new PickerController(this, this.player1Board);
+        this.player2Picker = new PickerController(this, this.player2Board);
+
         this.currentPlayer = 1;
         this.status = GameStatus.Starting;
+    }
+
+    getBoard(player: 1 | 2) {
+        return player === 1 ? this.player1Board : this.player2Board;
+    }
+
+    getPickerController(player: 1 | 2) {
+        return player === 1 ? this.player1Picker : this.player2Picker;
+    }
+
+    get isStarting() {
+        return this.status === GameStatus.Starting;
     }
 
     placeShipsRandomly(board: Board, ships: BattleShip[]) {
@@ -32,11 +50,12 @@ export default class GameController {
                 const row = Math.floor(Math.random() * board.boardSize);
                 const col = Math.floor(Math.random() * board.boardSize);
 
-                const direction: Direction =
-                    Math.random() < 0.5 ? "horizontal" : "vertical";
+                ship.setDirection(
+                    Math.random() < 0.5 ? "horizontal" : "vertical"
+                );
 
-                if (board.canPlaceShip(row, col, direction, ship.size, true)) {
-                    board.placeShip(row, col, direction, ship);
+                if (board.canPlaceShip(row, col, ship, true)) {
+                    board.placeShip(row, col, ship);
                     placed = true;
                 }
             }
@@ -57,7 +76,7 @@ export default class GameController {
             for (let c = col; c < col + shipLength; c++) {
                 if (
                     board.cellHasShip(row, c) ||
-                    board.hasAdjascentShip(row, c)
+                    board.hasAdjacentShip(row, c)
                 ) {
                     return false;
                 }
@@ -69,7 +88,7 @@ export default class GameController {
             for (let r = row; r < row + shipLength; r++) {
                 if (
                     board.cellHasShip(r, col) ||
-                    board.hasAdjascentShip(r, col)
+                    board.hasAdjacentShip(r, col)
                 ) {
                     return false;
                 }
@@ -101,21 +120,21 @@ export default class GameController {
         return this.status;
     }
 
-    handleShipDrag() {
-        if (this.dragPromiseResolve) {
-            this.dragPromiseResolve("cancel");
-        }
-        const dragPromise = new Promise((resolve) => {
-            this.dragPromiseResolve = resolve;
-        });
+    // handleShipDrag() {
+    //     if (this.dragPromiseResolve) {
+    //         this.dragPromiseResolve("cancel");
+    //     }
+    //     const dragPromise = new Promise((resolve) => {
+    //         this.dragPromiseResolve = resolve;
+    //     });
 
-        return dragPromise;
-    }
+    //     return dragPromise;
+    // }
 
-    endDragging(destiny: "board" | "picker" | "cancel") {
-        if (destiny !== "cancel") {
-            this.dragPromiseResolve?.(destiny);
-        }
-        this.dragPromiseResolve = null;
-    }
+    // endDragging(destiny: "board" | "picker" | "cancel") {
+    //     if (destiny !== "cancel") {
+    //         this.dragPromiseResolve?.(destiny);
+    //     }
+    //     this.dragPromiseResolve = null;
+    // }
 }

@@ -4,7 +4,6 @@ import BoardComponent from "./BoardComponent";
 import ShipPicker from "./ShipPicker";
 import { GameStatus } from "../interfaces/interfaces";
 import { generateShipSet } from "../utils/Utils";
-import PickerController from "../classes/PickerController";
 
 interface BoardProps {
     player: 1 | 2;
@@ -12,18 +11,17 @@ interface BoardProps {
 
 function PlayerDashboardComponent({ player }: BoardProps) {
     const { game } = useContext(GameContext);
-    const board = player === 1 ? game.player1Board : game.player2Board;
+
+    const board = game.getBoard(player);
+    const pickerController = game.getPickerController(player);
 
     const [rend, setRend] = useState(false);
     const [pickerVisible, setPickerVisible] = useState(false);
-    const [pickerController, setPickerController] =
-        useState<PickerController | null>(null);
 
     function placeShipsRandomly() {
         const ships = generateShipSet(board.player);
         game.placeShipsRandomly(board, ships);
         setPickerVisible(false);
-        setPickerController(null);
         redraw();
     }
 
@@ -33,15 +31,9 @@ function PlayerDashboardComponent({ player }: BoardProps) {
 
     function toggleManualPlace() {
         if (game.status !== GameStatus.Starting) {
-            setPickerVisible(false);
-            setPickerController(null);
-            redraw();
             return;
         }
-        const newVisibility = !pickerVisible;
-
-        setPickerController(newVisibility ? new PickerController(board) : null);
-        setPickerVisible(newVisibility);
+        setPickerVisible(!pickerVisible);
         redraw();
     }
 
@@ -59,7 +51,7 @@ function PlayerDashboardComponent({ player }: BoardProps) {
                 </div>
                 <div className="flex gap-2">
                     {pickerVisible && pickerController ? (
-                        <ShipPicker controller={pickerController} />
+                        <ShipPicker player={player} redraw={redraw} />
                     ) : null}
                     <BoardComponent
                         board={board}
