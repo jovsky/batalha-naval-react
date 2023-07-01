@@ -26,15 +26,6 @@ export interface GameContextInterface {
     restartGame: () => void;
 }
 
-export interface PickerControllerInterface {
-    draggedId: string | null;
-    shipMap: ShipMap;
-    draggedToBoard: () => void;
-    draggedToPicker: () => void;
-    setDraggedShipId: (id: string) => void;
-    unsetDraggedShipId: () => void;
-}
-
 export type ShipMap = Map<
     string,
     {

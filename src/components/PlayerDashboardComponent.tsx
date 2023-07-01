@@ -24,6 +24,10 @@ function PlayerDashboardComponent({ player }: BoardProps) {
         game.placeShipsRandomly(board, ships);
         setPickerVisible(false);
         setPickerController(null);
+        redraw();
+    }
+
+    function redraw() {
         setRend(!rend);
     }
 
@@ -31,14 +35,14 @@ function PlayerDashboardComponent({ player }: BoardProps) {
         if (game.status !== GameStatus.Starting) {
             setPickerVisible(false);
             setPickerController(null);
-            setRend(!rend);
+            redraw();
             return;
         }
         const newVisibility = !pickerVisible;
 
         setPickerController(newVisibility ? new PickerController(board) : null);
         setPickerVisible(newVisibility);
-        setRend(!rend);
+        redraw();
     }
 
     return (
@@ -60,6 +64,7 @@ function PlayerDashboardComponent({ player }: BoardProps) {
                     <BoardComponent
                         board={board}
                         controller={pickerController}
+                        redraw={redraw}
                     />
                 </div>
             </div>

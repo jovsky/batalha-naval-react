@@ -35,7 +35,7 @@ export default class GameController {
                 const direction: Direction =
                     Math.random() < 0.5 ? "horizontal" : "vertical";
 
-                if (this.canPlaceShip(board, row, col, direction, ship.size)) {
+                if (board.canPlaceShip(row, col, direction, ship.size, true)) {
                     board.placeShip(row, col, direction, ship);
                     placed = true;
                 }
@@ -55,7 +55,10 @@ export default class GameController {
                 return false;
             }
             for (let c = col; c < col + shipLength; c++) {
-                if (board.cellHasShip(row, c)) {
+                if (
+                    board.cellHasShip(row, c) ||
+                    board.hasAdjascentShip(row, c)
+                ) {
                     return false;
                 }
             }
@@ -64,7 +67,10 @@ export default class GameController {
                 return false;
             }
             for (let r = row; r < row + shipLength; r++) {
-                if (board.cellHasShip(r, col)) {
+                if (
+                    board.cellHasShip(r, col) ||
+                    board.hasAdjascentShip(r, col)
+                ) {
                     return false;
                 }
             }

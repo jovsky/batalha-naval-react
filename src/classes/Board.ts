@@ -27,8 +27,8 @@ export default class Board {
         direction: Direction,
         ship: BattleShip
     ): void {
+        ship.cells = [];
         if (direction === "vertical") {
-            ship.cells = [];
             for (let r = row; r < row + ship.size; r++) {
                 const cell = this.cellsMap[r][col];
                 if (cell.state !== CellState.Empty) {
@@ -53,6 +53,41 @@ export default class Board {
             this.ships = [];
         }
         this.ships.push(ship);
+    }
+
+    canPlaceShip(
+        row: number,
+        col: number,
+        direction: string,
+        shipLength: number,
+        blockAdjascent = false
+    ): boolean {
+        if (direction === "horizontal") {
+            if (col + shipLength > this.boardSize) {
+                return false;
+            }
+            for (let c = col; c < col + shipLength; c++) {
+                if (
+                    this.cellHasShip(row, c) ||
+                    (blockAdjascent && this.hasAdjascentShip(row, c))
+                ) {
+                    return false;
+                }
+            }
+        } else {
+            if (row + shipLength > this.boardSize) {
+                return false;
+            }
+            for (let r = row; r < row + shipLength; r++) {
+                if (
+                    this.cellHasShip(r, col) ||
+                    (blockAdjascent && this.hasAdjascentShip(r, col))
+                ) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     attack(row: number, col: number): boolean {
@@ -85,6 +120,24 @@ export default class Board {
 
     cellHasShip(row: number, col: number) {
         return !!this.cellsMap[row][col].ship;
+    }
+
+    hasAdjascentShip(row: number, col: number) {
+        const neighbours = [
+            [row - 1, col - 1],
+            [row - 1, col + 1],
+            [row + 1, col - 1],
+            [row + 1, col + 1],
+        ];
+        for (let i = 0; i < neighbours.length; i++) {
+            const [r, c] = neighbours[i];
+            if (r >= 0 && r < this.boardSize && c >= 0 && c < this.boardSize) {
+                if (this.cellHasShip(r, c)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     isBoardDestroyed(): boolean {
@@ -121,27 +174,21 @@ export default class Board {
         return this.ships;
     }
 
-    handleDrop(rowIndex: number, colIndex: number) {
-        console.log(rowIndex, colIndex);
-        // event.preventDefault();
-        // const shipId = event.dataTransfer.getData('text/plain');
-        // const ship = ships.find((ship) => ship.id === shipId);
-        // if (ship) {
-        //   const canPlace = canPlaceShip(ship, rowIndex, colIndex);
-        //   if (canPlace) {
-        //     const newBoard = [...board];
-        //     for (let i = 0; i < ship.length; i++) {
-        //       if (ship.isHorizontal) {
-        //         newBoard[rowIndex][colIndex + i] = ship;
-        //       } else {
-        //         newBoard[rowIndex + i][colIndex] = ship;
-        //       }
-        //     }
-        //     setBoard(newBoard);
-        //     // onBoardDrop(ship.id, rowIndex, colIndex);
-        //   }
-        // }
+    removeShip(ship: BattleShip) {
+        if (!this.ships) {
+            return;
+        }
+        const index = this.ships.indexOf(ship);
+        if (index === -1) {
+            return;
+        }
+        this.ships.splice(index, 1);
+        ship.cells.forEach(({ r, c }) => {
+            const cell = this.cellsMap[r][c];
+            if (cell.ship && cell.ship.id === ship.id) {
+                cell.ship = null;
+                cell.state = CellState.Empty;
+            }
+        });
     }
-
-    onBoardDragOver() {}
 }
