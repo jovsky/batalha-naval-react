@@ -75,7 +75,9 @@ export default class ShipPicker extends React.Component<
         return (
             <div
                 className="flex flex-col mr-6 rounded-xl bg-slate-700 px-10 pt-5 gap-2 h-[450px] w-[250px]"
-                onDragOver={(e) => e.preventDefault()}
+                onDragOver={(e) =>
+                    this.pickerController.isPlacing ? e.preventDefault() : null
+                }
                 onDrop={() => this.handleDragDrop()}
             >
                 {this.state.shipsAvailable.map((ship) => (

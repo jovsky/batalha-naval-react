@@ -14,7 +14,7 @@ class BoardComponent extends React.Component<BoardProps> {
         const { board } = this.props;
         return (
             <div className="flex flex-col w-fit h-fit ">
-                {board.cellsMap.map((row, rowIndex) => (
+                {board.getCellsMap().map((row, rowIndex) => (
                     <div key={rowIndex} className="flex flex-row">
                         {row.map((cell, colIndex) => (
                             <CellComponent

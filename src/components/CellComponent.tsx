@@ -36,14 +36,16 @@ export default function CellComponent({ cell, player, redraw }: BoardProps) {
     }, []);
 
     const ship = cell.getShip();
-    if (ship && shipHead) {
+    if (pickerController.isPlacing && ship && shipHead) {
         console.log(cell.row, cell.col, ship);
     }
 
     return (
         <div className="relative">
             <div
-                onDragOver={(e) => e.preventDefault()}
+                onDragOver={(e) =>
+                    pickerController.isPlacing ? e.preventDefault() : null
+                }
                 onDrop={handleDragDrop}
                 className={`cell-paint bg-neutral-700 outline outline-1 ${
                     pickerController.isPlacing ? "" : getCellShipClass(ship)

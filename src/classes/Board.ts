@@ -21,6 +21,10 @@ export default class Board {
         }
     }
 
+    getCellsMap() {
+        return this.cellsMap;
+    }
+
     placeShip(row: number, col: number, ship: BattleShip): void {
         for (let i = 0; i < ship.size; i++) {
             const cell =
@@ -87,8 +91,12 @@ export default class Board {
     hasAdjacentShip(row: number, col: number) {
         const neighbors = [
             [row - 1, col - 1],
+            [row - 1, col],
             [row - 1, col + 1],
+            [row, col - 1],
+            [row, col + 1],
             [row + 1, col - 1],
+            [row + 1, col],
             [row + 1, col + 1],
         ];
         for (let i = 0; i < neighbors.length; i++) {
