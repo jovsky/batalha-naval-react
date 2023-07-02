@@ -60,7 +60,7 @@ export default class DraggableShip extends React.Component<
                     <div
                         key={index}
                         onMouseEnter={() => this.updateCellIndex(index)}
-                        className={`cell-paint ${getCellShipClass(
+                        className={`cell-paint smaller ${getCellShipClass(
                             this.props.ship
                         )}`}
                     />

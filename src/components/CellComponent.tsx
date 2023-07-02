@@ -1,11 +1,10 @@
-import { useContext, useState } from "react";
-import { BoardCell, Direction, GameStatus } from "../interfaces/interfaces";
-import { getCellShipClass } from "../utils/Utils";
-import PickerController from "../classes/PickerController";
+import { useContext, useState, useEffect } from "react";
+import { Direction, GameStatus } from "../interfaces/interfaces";
+import { getCellShipClass, useRedraw } from "../utils/Utils";
 import { GameContext } from "../context/GameContext";
-import Board from "../classes/Board";
 import BattleShip from "../classes/BattleShip";
 import DraggableShip from "./DraggableShip";
+import BoardCell from "../classes/BoardCell";
 
 interface BoardProps {
     cell: BoardCell;
@@ -13,16 +12,13 @@ interface BoardProps {
     redraw: () => void;
 }
 
-function CellComponent({ cell, player, redraw }: BoardProps) {
+export default function CellComponent({ cell, player, redraw }: BoardProps) {
     const { game } = useContext(GameContext);
 
     const board = game.getBoard(player);
     const pickerController = game.getPickerController(player);
 
-    const [shipHead, setShipHead] = useState<{
-        ship: BattleShip;
-        direction: Direction;
-    } | null>(null);
+    const [shipHead, setShipHead] = useState<boolean>(false);
 
     function handleDragDrop() {
         if (game.status !== GameStatus.Starting) {
@@ -32,25 +28,34 @@ function CellComponent({ cell, player, redraw }: BoardProps) {
         redraw();
     }
 
+    useEffect(() => {
+        cell.setShipHeadUpdater((value) => {
+            setShipHead(value);
+            redraw();
+        });
+    }, []);
+
+    const ship = cell.getShip();
+    if (ship && shipHead) {
+        console.log(cell.row, cell.col, ship);
+    }
+
     return (
-        <>
+        <div className="relative">
             <div
-                draggable={pickerController.isPlacing && !!cell.ship}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={handleDragDrop}
                 className={`cell-paint bg-neutral-700 outline outline-1 ${
-                    pickerController.isPlacing
-                        ? getCellShipClass(cell.ship)
-                        : ""
+                    pickerController.isPlacing ? "" : getCellShipClass(ship)
                 } `}
             />
-            {pickerController.isPlacing && shipHead && cell.ship ? (
-                <DraggableShip ship={shipHead.ship} player={player} />
+            {pickerController.isPlacing && shipHead && ship ? (
+                <div className="absolute z-10 top-[-1px] left-[-1px]">
+                    <DraggableShip ship={ship} player={player} />
+                </div>
             ) : (
                 ""
             )}
-        </>
+        </div>
     );
 }
-
-export default CellComponent;

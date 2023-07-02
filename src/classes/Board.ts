@@ -1,52 +1,33 @@
-import { BoardCell, CellState } from "../interfaces/interfaces";
 import BattleShip from "./BattleShip";
+import BoardCell from "./BoardCell";
 import GameController from "./GameController";
 
 export default class Board {
-    public cellsMap: BoardCell[][];
+    private cellsMap: BoardCell[][] = [];
+    private ships: BattleShip[] = [];
 
     constructor(
         public boardSize: number,
-        private ships: BattleShip[] | null,
         public player: 1 | 2,
         public game: GameController
     ) {
-        this.cellsMap = Array.from({ length: boardSize }, (_, row) =>
-            Array.from({ length: boardSize }, (_, col) => ({
-                row,
-                col,
-                state: CellState.Empty,
-                ship: null,
-            }))
-        );
+        for (let r = 0; r < boardSize; r++) {
+            for (let c = 0; c < boardSize; c++) {
+                if (!this.cellsMap[r]) {
+                    this.cellsMap[r] = [];
+                }
+                this.cellsMap[r][c] = new BoardCell(this, r, c);
+            }
+        }
     }
 
     placeShip(row: number, col: number, ship: BattleShip): void {
-        const cells = [];
-        if (ship.getDirection() === "vertical") {
-            for (let r = row; r < row + ship.size; r++) {
-                const cell = this.cellsMap[r][col];
-                if (cell.state !== CellState.Empty) {
-                    throw new Error("Placement error: cell is not empty");
-                }
-                cell.state = CellState.Ship;
-                cell.ship = ship;
-                cells.push({ r, c: col });
-            }
-        } else {
-            for (let c = col; c < col + ship.size; c++) {
-                const cell = this.cellsMap[row][c];
-                if (cell.state !== CellState.Empty) {
-                    throw new Error("Placement error: cell is not empty");
-                }
-                cell.state = CellState.Ship;
-                cell.ship = ship;
-                cells.push({ r: row, c });
-            }
-        }
-        ship.setCells(cells);
-        if (!this.ships) {
-            this.ships = [];
+        for (let i = 0; i < ship.size; i++) {
+            const cell =
+                ship.getDirection() === "vertical"
+                    ? this.cellsMap[row + i][col]
+                    : this.cellsMap[row][col + i];
+            cell.setShip(ship, i);
         }
         this.ships.push(ship);
     }
@@ -64,7 +45,7 @@ export default class Board {
             }
             for (let c = col; c < col + shipSize; c++) {
                 if (
-                    this.cellHasShip(row, c) ||
+                    !this.isCellEmpty(row, c) ||
                     (blockAdjacent && this.hasAdjacentShip(row, c))
                 ) {
                     return false;
@@ -76,7 +57,7 @@ export default class Board {
             }
             for (let r = row; r < row + shipSize; r++) {
                 if (
-                    this.cellHasShip(r, col) ||
+                    !this.isCellEmpty(r, col) ||
                     (blockAdjacent && this.hasAdjacentShip(r, col))
                 ) {
                     return false;
@@ -88,34 +69,19 @@ export default class Board {
 
     attack(row: number, col: number): boolean {
         const cell = this.cellsMap[row][col];
-        if (cell.state === CellState.Hit || cell.state === CellState.Miss) {
+        if (cell.wasAttacked) {
             throw new Error("Attack error: cell already played");
         }
-        if (cell.state === CellState.Ship) {
-            cell.state = CellState.Hit;
-            if (!cell.ship) {
-                throw new Error(
-                    "Attack error: cell state is 'Ship' but actually there is no ship"
-                );
-            }
-
-            cell.ship.attacked();
-            return true;
-        }
-        cell.state = CellState.Miss;
-        return false;
-    }
-
-    getCellState(row: number, col: number): CellState {
-        return this.cellsMap[row][col].state;
+        const hit = cell.attack();
+        return hit;
     }
 
     isCellEmpty(row: number, col: number) {
-        return this.getCellState(row, col) === CellState.Empty;
+        return this.cellsMap[row][col].isEmpty;
     }
 
-    cellHasShip(row: number, col: number) {
-        return !!this.cellsMap[row][col].ship;
+    cellHasShip(row: number, col: number, ship: BattleShip) {
+        return this.cellsMap[row][col].hasShip(ship);
     }
 
     hasAdjacentShip(row: number, col: number) {
@@ -128,7 +94,7 @@ export default class Board {
         for (let i = 0; i < neighbors.length; i++) {
             const [r, c] = neighbors[i];
             if (r >= 0 && r < this.boardSize && c >= 0 && c < this.boardSize) {
-                if (this.cellHasShip(r, c)) {
+                if (!this.isCellEmpty(r, c)) {
                     return true;
                 }
             }
@@ -137,7 +103,7 @@ export default class Board {
     }
 
     isBoardDestroyed(): boolean {
-        if (!this.ships) {
+        if (!this.ships.length) {
             return false;
         }
         for (const ship of this.ships) {
@@ -149,16 +115,9 @@ export default class Board {
     }
 
     clearShips() {
-        if (!this.ships) {
-            return;
-        }
-        this.ships = null;
-
+        this.ships = [];
         this.getAllCells().forEach((cell) => {
-            const ship = cell.ship;
-            cell.ship = null;
-            cell.state = CellState.Empty;
-            if (ship) ship.clearCells();
+            cell.removeShip();
         });
     }
 
@@ -167,19 +126,14 @@ export default class Board {
     }
 
     removeShip(ship: BattleShip) {
-        if (!this.ships) {
-            return;
-        }
         const index = this.ships.indexOf(ship);
         if (index === -1) {
             return;
         }
         this.ships.splice(index, 1);
-        ship.getCells().forEach(({ r, c }) => {
-            const cell = this.cellsMap[r][c];
-            if (cell.ship && cell.ship.id === ship.id) {
-                cell.ship = null;
-                cell.state = CellState.Empty;
+        this.getAllCells().forEach((cell) => {
+            if (cell.hasShip(ship)) {
+                cell.removeShip();
             }
         });
     }

@@ -5,7 +5,6 @@ export default class BattleShip {
     readonly size: number;
     readonly color: string;
     readonly id: string;
-    private cells: { r: number; c: number }[] = [];
     private hits: number = 0;
     private direction: Direction = "horizontal";
     private placedAt: "board" | "picker" = "board";
@@ -17,9 +16,6 @@ export default class BattleShip {
         this.id = id;
     }
 
-    getCells() {
-        return this.cells;
-    }
     getHits() {
         return this.hits;
     }
@@ -40,14 +36,6 @@ export default class BattleShip {
 
     attacked() {
         this.hits++;
-    }
-
-    setCells(cells: typeof this.cells) {
-        this.cells = cells;
-    }
-
-    clearCells() {
-        this.cells = [];
     }
 
     setDirection(direction: Direction) {

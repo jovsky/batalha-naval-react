@@ -1,6 +1,7 @@
 import BattleShip from "../classes/BattleShip";
-import { BoardCell } from "../interfaces/interfaces";
+import { useState } from "react";
 import gameSettings from "../gameSettings.json";
+import BoardCell from "../classes/BoardCell";
 
 export function getCellShipClass(ship: BoardCell["ship"]) {
     return ship ? `ship-cell ${ship.color}-ship` : "";
@@ -21,4 +22,9 @@ export function generateShipSet(player: 1 | 2) {
         }
     });
     return ships;
+}
+
+export function useRedraw() {
+    const [val, setVal] = useState(false);
+    return () => setVal(!val);
 }

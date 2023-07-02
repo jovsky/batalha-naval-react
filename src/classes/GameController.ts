@@ -10,17 +10,10 @@ export default class GameController {
     public player2Picker: PickerController;
     public currentPlayer: number;
     public status: GameStatus;
-    private dragPromiseResolve:
-        | null
-        | ((destiny: "board" | "picker" | "cancel") => void) = null;
 
-    constructor(
-        boardSize: number,
-        player1Ships: BattleShip[] | null,
-        player2Ships: BattleShip[] | null
-    ) {
-        this.player1Board = new Board(boardSize, player1Ships, 1, this);
-        this.player2Board = new Board(boardSize, player2Ships, 2, this);
+    constructor(boardSize: number) {
+        this.player1Board = new Board(boardSize, 1, this);
+        this.player2Board = new Board(boardSize, 2, this);
         this.player1Picker = new PickerController(this, this.player1Board);
         this.player2Picker = new PickerController(this, this.player2Board);
 
