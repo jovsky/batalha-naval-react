@@ -42,6 +42,11 @@ export default class BattleShip {
         this.direction = direction;
     }
 
+    rotate() {
+        this.direction =
+            this.direction === "horizontal" ? "vertical" : "horizontal";
+    }
+
     get destroyed() {
         return this.hits === this.size;
     }

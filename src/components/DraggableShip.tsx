@@ -3,6 +3,7 @@ import React from "react";
 import { getCellShipClass } from "../utils/Utils";
 import { GameContext } from "../context/GameContext";
 import { GameContextInterface } from "../interfaces/interfaces";
+import { Dragg } from "react-draggable";
 
 interface DraggableShipProps {
     ship: BattleShip;
@@ -49,10 +50,14 @@ export default class DraggableShip extends React.Component<
     render() {
         return (
             <div
-                className="flex bg-black p-[1px] gap-[1px] w-fit"
+                className={`flex w-fit ${this.state.dragging ? "hide" : ""}`}
                 draggable
                 onDragStart={() => this.setDraggedShip()}
                 onDragEnd={() => this.unsetDraggedShip()}
+                onDragOver={(e) =>
+                    this.pickerController.isPlacing ? e.preventDefault() : null
+                }
+                onDrop={() => {}}
             >
                 {Array.from({
                     length: this.props.ship.size,
@@ -60,9 +65,13 @@ export default class DraggableShip extends React.Component<
                     <div
                         key={index}
                         onMouseEnter={() => this.updateCellIndex(index)}
-                        className={`cell-paint smaller ${getCellShipClass(
-                            this.props.ship
-                        )}`}
+                        className={`cell-paint
+                        ${getCellShipClass(this.props.ship)} 
+                        ${
+                            this.props.ship.getDirection() === "horizontal"
+                                ? "rotate-90"
+                                : ""
+                        }}`}
                     />
                 ))}
             </div>

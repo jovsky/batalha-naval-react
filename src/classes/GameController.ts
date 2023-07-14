@@ -1,4 +1,4 @@
-import { Direction, GameStatus } from "../interfaces/interfaces";
+import { GameStatus } from "../interfaces/interfaces";
 import Board from "./Board";
 import BattleShip from "./BattleShip";
 import PickerController from "./PickerController";
@@ -55,44 +55,9 @@ export default class GameController {
         });
     }
 
-    canPlaceShip(
-        board: Board,
-        row: number,
-        col: number,
-        direction: string,
-        shipLength: number
-    ): boolean {
-        if (direction === "horizontal") {
-            if (col + shipLength > board.boardSize) {
-                return false;
-            }
-            for (let c = col; c < col + shipLength; c++) {
-                if (
-                    board.cellHasShip(row, c) ||
-                    board.hasAdjacentShip(row, c)
-                ) {
-                    return false;
-                }
-            }
-        } else {
-            if (row + shipLength > board.boardSize) {
-                return false;
-            }
-            for (let r = row; r < row + shipLength; r++) {
-                if (
-                    board.cellHasShip(r, col) ||
-                    board.hasAdjacentShip(r, col)
-                ) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
     attack(player: number, row: number, column: number): void {
         if (this.status !== GameStatus.InProgress) {
-            return; // Game already won or lost
+            return;
         }
 
         const board = player === 1 ? this.player2Board : this.player1Board;
@@ -112,22 +77,4 @@ export default class GameController {
     getStatus(): GameStatus {
         return this.status;
     }
-
-    // handleShipDrag() {
-    //     if (this.dragPromiseResolve) {
-    //         this.dragPromiseResolve("cancel");
-    //     }
-    //     const dragPromise = new Promise((resolve) => {
-    //         this.dragPromiseResolve = resolve;
-    //     });
-
-    //     return dragPromise;
-    // }
-
-    // endDragging(destiny: "board" | "picker" | "cancel") {
-    //     if (destiny !== "cancel") {
-    //         this.dragPromiseResolve?.(destiny);
-    //     }
-    //     this.dragPromiseResolve = null;
-    // }
 }

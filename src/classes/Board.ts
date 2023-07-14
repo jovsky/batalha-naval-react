@@ -48,10 +48,12 @@ export default class Board {
                 return false;
             }
             for (let c = col; c < col + shipSize; c++) {
-                if (
-                    !this.isCellEmpty(row, c) ||
-                    (blockAdjacent && this.hasAdjacentShip(row, c))
-                ) {
+                const hasAnotherShip =
+                    !this.isCellEmpty(row, c) &&
+                    !this.cellHasThisShip(row, c, ship);
+                const hasNeighbor =
+                    blockAdjacent && this.hasAdjacentShip(row, c);
+                if (hasAnotherShip || hasNeighbor) {
                     return false;
                 }
             }
@@ -60,10 +62,12 @@ export default class Board {
                 return false;
             }
             for (let r = row; r < row + shipSize; r++) {
-                if (
-                    !this.isCellEmpty(r, col) ||
-                    (blockAdjacent && this.hasAdjacentShip(r, col))
-                ) {
+                const hasAnotherShip =
+                    !this.isCellEmpty(r, col) &&
+                    !this.cellHasThisShip(r, col, ship);
+                const hasNeighbor =
+                    blockAdjacent && this.hasAdjacentShip(r, col);
+                if (hasAnotherShip || hasNeighbor) {
                     return false;
                 }
             }
@@ -84,7 +88,7 @@ export default class Board {
         return this.cellsMap[row][col].isEmpty;
     }
 
-    cellHasShip(row: number, col: number, ship: BattleShip) {
+    cellHasThisShip(row: number, col: number, ship: BattleShip) {
         return this.cellsMap[row][col].hasShip(ship);
     }
 

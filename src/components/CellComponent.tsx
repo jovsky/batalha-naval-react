@@ -1,8 +1,7 @@
 import { useContext, useState, useEffect } from "react";
-import { Direction, GameStatus } from "../interfaces/interfaces";
-import { getCellShipClass, useRedraw } from "../utils/Utils";
+import { GameStatus } from "../interfaces/interfaces";
+import { getCellShipClass } from "../utils/Utils";
 import { GameContext } from "../context/GameContext";
-import BattleShip from "../classes/BattleShip";
 import DraggableShip from "./DraggableShip";
 import BoardCell from "../classes/BoardCell";
 
@@ -36,28 +35,27 @@ export default function CellComponent({ cell, player, redraw }: BoardProps) {
     }, []);
 
     const ship = cell.getShip();
-    if (pickerController.isPlacing && ship && shipHead) {
-        console.log(cell.row, cell.col, ship);
-    }
 
     return (
-        <div className="relative">
+        <>
             <div
-                onDragOver={(e) =>
-                    pickerController.isPlacing ? e.preventDefault() : null
-                }
+                onDragOver={(e) => {
+                    console.log("overrr", cell.row, cell.col);
+                    pickerController.isPlacing ? e.preventDefault() : null;
+                }}
                 onDrop={handleDragDrop}
-                className={`cell-paint bg-neutral-700 outline outline-1 ${
+                className={`relative cell-paint bg-neutral-700 outline outline-1 ${
                     pickerController.isPlacing ? "" : getCellShipClass(ship)
                 } `}
-            />
-            {pickerController.isPlacing && shipHead && ship ? (
-                <div className="absolute z-10 top-[-1px] left-[-1px]">
-                    <DraggableShip ship={ship} player={player} />
-                </div>
-            ) : (
-                ""
-            )}
-        </div>
+            >
+                {pickerController.isPlacing && shipHead && ship ? (
+                    <div className="absolute z-10 top-0 left-0">
+                        <DraggableShip ship={ship} player={player} />
+                    </div>
+                ) : (
+                    ""
+                )}
+            </div>
+        </>
     );
 }

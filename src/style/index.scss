@@ -10,13 +10,10 @@
     @apply text-lg border-2 rounded-md border-red-500 px-4 py-1;
 }
 .cell-paint {
-    @apply w-8 h-8;
+    @apply w-8 h-8 outline outline-1 outline-black;
+    // box-shadow: inset 0 0 1px 1px black;
     &.ship-cell {
         background-image: linear-gradient(45deg, #ffffff60, transparent);
-    }
-    &.smaller {
-        width: calc(2rem - 1px);
-        height: calc(2rem - 1px);
     }
     &.purple-ship {
         @apply bg-purple-500;
@@ -36,4 +33,10 @@
     &.orange-ship {
         @apply bg-orange-500;
     }
+}
+
+.hide {
+    transition: 0.0001s;
+    transform: translateX(-9999px);
+    pointer-events: visiblePainted;
 }

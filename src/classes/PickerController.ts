@@ -23,6 +23,7 @@ export default class PickerController {
         this.board.clearShips();
         this.ships = generateShipSet(this.board.player);
         this.ships.forEach((ship) => ship.setPlacePicker());
+        window.addEventListener("keydown", this.onKeyboardPress.bind(this));
         return [...this.ships];
     }
 
@@ -32,6 +33,7 @@ export default class PickerController {
         }
         this.picker = null;
         this.ships = [];
+        window.removeEventListener("keydown", this.onKeyboardPress.bind(this));
     }
 
     draggedToPicker() {
@@ -95,5 +97,20 @@ export default class PickerController {
 
     unsetDraggedShip() {
         this.dragging = null;
+    }
+
+    private onKeyboardPress(event: KeyboardEvent) {
+        if (event.code !== "KeyR") {
+            return;
+        }
+        this.onRotatePress();
+    }
+
+    private onRotatePress() {
+        if (!this.dragging) {
+            return;
+        }
+        console.log("rotate");
+        this.dragging.ship.rotate();
     }
 }

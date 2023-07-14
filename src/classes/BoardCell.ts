@@ -1,6 +1,5 @@
 import BattleShip from "./BattleShip";
 import Board from "./Board";
-import CellComponent from "../components/CellComponent";
 
 class BoardCell {
     private ship: BattleShip | null = null;
